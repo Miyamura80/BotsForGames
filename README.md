@@ -3,7 +3,7 @@ For 3rd Year Computer Science project "Bots for games" at University of Oxford u
 
 Load the model from pickle as such:
 ```
-model = Net(*args, **kwargs)
+model = Net()
 model.load_state_dict(torch.load('network.pkl'))
 model.eval()
 ```
