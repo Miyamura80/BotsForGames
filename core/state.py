@@ -1,5 +1,6 @@
 import numpy as np
 import pyspiel
+import copy
 
 game = pyspiel.load_game("hex",{"board_size":7})
 
@@ -16,6 +17,14 @@ class State:
         self.win_color = 0
         self.record = []
         self.hex_state = game.new_initial_state()
+
+    def __copy__(self):
+        newState = State()
+        newState.board = copy.copy(self.board)
+        newState.win_color = copy.copy(self.win_color)
+        newState.record = copy.copy(self.record)
+        newState.hex_state = copy.copy(self.hex_state)
+        return newState
 
     def action2str(self, a: int):
         return self.X[a // 7] + self.Y[a % 7]
@@ -82,10 +91,13 @@ class State:
         a[0, action // 7, action % 7] = 1
         return a
 
-state = State().play('B1')
-print(state)
-print('input feature')
-print(state.feature())
-state = State().play('B2 A1 C2')
-print('input feature')
-print(state.feature())
+
+
+if __name__=="__main__":
+    state = State().play('B1')
+    print(state)
+    print('input feature')
+    print(state.feature())
+    state = State().play('B2 A1 C2')
+    print('input feature')
+    print(state.feature())
