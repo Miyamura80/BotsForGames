@@ -2,47 +2,45 @@ import numpy as np
 import pyspiel
 import copy
 
-game = pyspiel.load_game("hex",{"board_size":7})
-
+BOARD_SIZE = 3
+game = pyspiel.load_game("hex",{"board_size":BOARD_SIZE})
 BLACK, WHITE = 1, -1  # first turn or second turn player
 
 class State:
-    '''Board implementation of 7x7 Hex Board'''
-    X, Y = 'ABCDEFG',  '1234567'
+    '''Board implementation of BOARD_SIZE x BOARD_SIZE Hex Board'''
+    X, Y = 'ABCDEFGHI'[0:BOARD_SIZE],  '123456789'[0:BOARD_SIZE]
     C = {0: '_', BLACK: 'O', WHITE: 'X'}
 
     def __init__(self):
-        self.board = np.zeros((7, 7)) # (x, y)
+        self.board = np.zeros((BOARD_SIZE, BOARD_SIZE)) # (x, y)
         self.color = 1
         self.win_color = 0
         self.record = []
         self.hex_state = game.new_initial_state()
 
-    def __copy__(self):
+    def __deepcopy__(self):
         newState = State()
-        newState.board = copy.copy(self.board)
-        newState.win_color = copy.copy(self.win_color)
-        newState.record = copy.copy(self.record)
-        newState.hex_state = copy.copy(self.hex_state)
+        newState.board = copy.deepcopy(self.board)
+        newState.win_color = copy.deepcopy(self.win_color)
+        newState.record = copy.deepcopy(self.record)
+        newState.hex_state = copy.deepcopy(self.hex_state)
         return newState
 
     def action2str(self, a: int):
-        return self.X[a // 7] + self.Y[a % 7]
+        return self.X[a // BOARD_SIZE] + self.Y[a % BOARD_SIZE]
 
     def str2action(self, s: str):
-        return self.X.find(s[0]) * 7 + self.Y.find(s[1])
+        return self.X.find(s[0]) * BOARD_SIZE + self.Y.find(s[1])
 
     def record_string(self):
         return ' '.join([self.action2str(a) for a in self.record])
 
     def __str__(self):
-        # output board.
-        # s = '   ' + ' '.join(self.Y) + '\n'
-        # for i in range(7):
-        #     s += self.X[i] + ' ' + ' '.join([self.C[self.board[i, j]] for j in range(7)]) + '\n'
-        # s += 'record = ' + self.record_string()
-        # return s
-        return str(self.hex_state)
+        final_bd = [" "+" ".join(self.Y)]
+        hex_bd = str(self.hex_state).split("\n")
+        for i in range(len(hex_bd)):
+            final_bd.append(self.X[i]+" "+hex_bd[i])
+        return "\n".join(final_bd)
 
     def play(self, action):
         # state transition function
@@ -53,9 +51,8 @@ class State:
                 self.play(self.str2action(astr))
             return self
 
-
         # Single action case
-        x, y = action // 7, action % 7
+        x, y = action // BOARD_SIZE, action % BOARD_SIZE
         self.board[x, y] = self.color
         self.hex_state.apply_action(action)
 
@@ -73,31 +70,21 @@ class State:
 
     def terminal_reward(self):
         # terminal reward 
-        return self.win_color if self.color == BLACK else -self.win_color
+        # return self.win_color if self.color == BLACK else -self.win_color
+        return self.win_color
 
     def legal_actions(self):
         # list of legal actions on each state
-        return [a for a in range(7 * 7) if self.board[a // 7, a % 7] == 0]
+        return [a for a in range(BOARD_SIZE * BOARD_SIZE) if self.board[a // BOARD_SIZE, a % BOARD_SIZE] == 0]
 
     def feature(self):
         # input tensor for neural net (state)
         # return np.stack([self.board == self.color, self.board == -self.color]).astype(np.float32)
         observation =  np.array(self.hex_state.observation_tensor(), np.float32)
-        return observation.reshape(9,7,7)[1:8,:,:]
+        return observation.reshape(9,BOARD_SIZE,BOARD_SIZE)[1:BOARD_SIZE+1,:,:]
 
     def action_feature(self, action):
         # input tensor for neural net (action)
-        a = np.zeros((1, 7, 7), dtype=np.float32)
-        a[0, action // 7, action % 7] = 1
+        a = np.zeros((1, BOARD_SIZE, BOARD_SIZE), dtype=np.float32)
+        a[0, action // BOARD_SIZE, action % BOARD_SIZE] = 1
         return a
-
-
-
-if __name__=="__main__":
-    state = State().play('B1')
-    print(state)
-    print('input feature')
-    print(state.feature())
-    state = State().play('B2 A1 C2')
-    print('input feature')
-    print(state.feature())
