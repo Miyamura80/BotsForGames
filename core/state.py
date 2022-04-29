@@ -81,7 +81,7 @@ class State:
         # input tensor for neural net (state)
         # return np.stack([self.board == self.color, self.board == -self.color]).astype(np.float32)
         observation =  np.array(self.hex_state.observation_tensor(), np.float32)
-        return observation.reshape(9,BOARD_SIZE,BOARD_SIZE)[1:BOARD_SIZE+1,:,:]
+        return observation.reshape(9,BOARD_SIZE,BOARD_SIZE)
 
     def action_feature(self, action):
         # input tensor for neural net (action)

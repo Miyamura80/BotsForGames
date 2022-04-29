@@ -5,7 +5,7 @@ from math import sqrt, log
 from collections import defaultdict
 import matplotlib.pyplot as plt
 
-random.seed(0)
+random.seed(1)
 
 class MCTSAgent:
     def __init__(self) -> None:
