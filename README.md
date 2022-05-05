@@ -5,4 +5,5 @@ Load the model from pickle as such:
 ```
 net = Net()
 net.load_state_dict(torch.load('network.pkl'))
+net.to("cuda")
 ```
